@@ -46,7 +46,7 @@ class ResearchCollector:
             "start_time": datetime.now().isoformat(),
             "base_url": self.base_url,
             "total_responses": 0,
-            "unique_nodes": set(),
+            "unique_nodes": [],
             "final_graph": {},
             "references": {}
         }
