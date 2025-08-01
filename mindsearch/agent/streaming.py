@@ -201,7 +201,7 @@ class AsyncStreamingAgentForInternLM(AsyncStreamingAgentMixin, AsyncAgentForInte
             if not hasattr(self.agent, 'plugin_executor') or self.agent.plugin_executor is None:
                 # Simply assign the same plugin_executor to the inner agent
                 self.agent.plugin_executor = self.plugin_executor
-                print(f"✅ AsyncStreamingAgentForInternLM: Fixed inner agent plugin_executor")
+                logging.info("✅ AsyncStreamingAgentForInternLM: Fixed inner agent plugin_executor")
 
             # Also ensure interpreter_executor exists on inner agent
             if not hasattr(self.agent, 'interpreter_executor'):
