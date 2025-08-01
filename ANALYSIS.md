@@ -57,7 +57,7 @@ MindSearch demonstrates excellent **architectural capabilities** (multi-step rea
 
 **Example - Criminal Accusations:**
 ```
-Query: "why was jamar nunally sentended to prision in the early 2000..."
+Query: "why was jamar nunally sentenced to prison in the early 2000..."
 Response: "Jamar Nunally was sentenced to prison in the early 2000s due to 
 multiple criminal charges... convicted on charges that typically pertain to 
 either violent crimes or significant financial misdemeanors [[1]][[2]][[3]][[4]]"
