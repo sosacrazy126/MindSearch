@@ -26,7 +26,7 @@ def get_response(query):
             elif decoded.startswith(": ping - "):
                 continue
             response_data = json.loads(decoded)
-            print(f"Raw response: {response_data}")
+            logger.debug(f"Raw response: {response_data}")
 
             agent_return = response_data.get("response", {})
             node_name = response_data.get("current_node", "unknown")
