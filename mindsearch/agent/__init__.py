@@ -25,16 +25,18 @@ from .mindsearch_prompt import (
 LLM = {}
 
 
-def init_agent(lang="cn",
-               model_format="internlm_server",
-               search_engine="BingSearch",
-               use_async=False):
+def init_agent(lang="en", use_async=False):
+    """Simplified MindSearch: OpenAI GPT-4 + Serper API only"""
+
+    # Hardcoded to use OpenAI GPT-4
     mode = "async" if use_async else "sync"
+    model_format = "gpt4"
+
     llm = LLM.get(model_format, {}).get(mode)
     if llm is None:
         llm_cfg = deepcopy(getattr(llm_factory, model_format))
         if llm_cfg is None:
-            raise NotImplementedError
+            raise NotImplementedError(f"Model {model_format} not found")
         if use_async:
             cls_name = (
                 llm_cfg["type"].split(".")[-1] if isinstance(
@@ -44,18 +46,26 @@ def init_agent(lang="cn",
         LLM.setdefault(model_format, {}).setdefault(mode, llm)
 
     date = datetime.now().strftime("The current date is %Y-%m-%d.")
-    plugins = [(dict(
-        type=AsyncWebBrowser if use_async else WebBrowser,
-        searcher_type=search_engine,
-        topk=6,
-        secret_id=os.getenv("TENCENT_SEARCH_SECRET_ID"),
-        secret_key=os.getenv("TENCENT_SEARCH_SECRET_KEY"),
-    ) if search_engine == "TencentSearch" else dict(
-        type=AsyncWebBrowser if use_async else WebBrowser,
-        searcher_type=search_engine,
-        topk=6,
-        api_key=os.getenv("WEB_SEARCH_API_KEY"),
-    ))]
+
+    # Hardcoded to use GoogleSearch with Serper API
+    api_key = os.getenv("WEB_SEARCH_API_KEY")
+    if not api_key:
+        raise ValueError("WEB_SEARCH_API_KEY environment variable is required for Serper API")
+
+    if use_async:
+        plugins = [AsyncWebBrowser(
+            searcher_type="GoogleSearch",
+            topk=6,
+            api_key=api_key,
+        )]
+    else:
+        plugins = [WebBrowser(
+            searcher_type="GoogleSearch",
+            topk=6,
+            api_key=api_key,
+        )]
+
+    logging.info("✅ Simplified MindSearch: OpenAI GPT-4 + Serper API initialized")
     agent = (AsyncMindSearchAgent if use_async else MindSearchAgent)(
         llm=llm,
         template=date,

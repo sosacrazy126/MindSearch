@@ -17,13 +17,11 @@ from mindsearch.agent import init_agent
 def parse_arguments():
     import argparse
 
-    parser = argparse.ArgumentParser(description="MindSearch API")
+    parser = argparse.ArgumentParser(description="Simplified MindSearch API (OpenAI + Serper)")
     parser.add_argument("--host", default="0.0.0.0", type=str, help="Service host")
     parser.add_argument("--port", default=8002, type=int, help="Service port")
-    parser.add_argument("--lang", default="cn", type=str, help="Language")
-    parser.add_argument("--model_format", default="internlm_server", type=str, help="Model format")
-    parser.add_argument("--search_engine", default="BingSearch", type=str, help="Search engine")
-    parser.add_argument("--asy", default=False, action="store_true", help="Agent mode")
+    parser.add_argument("--lang", default="en", type=str, help="Language (en or zh)")
+    parser.add_argument("--asy", default=False, action="store_true", help="Use async mode")
     return parser.parse_args()
 
 
@@ -128,11 +126,7 @@ async def run(request: GenerationParams, _request: Request):
 
     inputs = request.inputs
     session_id = request.session_id
-    agent = init_agent(
-        lang=args.lang,
-        model_format=args.model_format,
-        search_engine=args.search_engine,
-    )
+    agent = init_agent(lang=args.lang)
     return EventSourceResponse(generate(), ping=300)
 
 
@@ -159,12 +153,7 @@ async def run_async(request: GenerationParams, _request: Request):
 
     inputs = request.inputs
     session_id = request.session_id
-    agent = init_agent(
-        lang=args.lang,
-        model_format=args.model_format,
-        search_engine=args.search_engine,
-        use_async=True,
-    )
+    agent = init_agent(lang=args.lang, use_async=True)
     return EventSourceResponse(generate(), ping=300)
 
 
