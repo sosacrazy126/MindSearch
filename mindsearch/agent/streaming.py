@@ -68,6 +68,13 @@ class AsyncStreamingAgentMixin:
 class StreamingAgent(StreamingAgentMixin, Agent):
     """Base streaming agent class"""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ensure plugin_executor is available for tool execution
+        if not hasattr(self, 'plugin_executor') and hasattr(self, 'plugins') and self.plugins:
+            from lagent.actions.action_executor import ActionExecutor
+            self.plugin_executor = ActionExecutor(self.plugins)
+
     def forward(self, *message: AgentMessage, session_id=0, **kwargs):
         formatted_messages = self.aggregator.aggregate(
             self.memory.get(session_id),
@@ -111,6 +118,26 @@ class StreamingAgentForInternLM(StreamingAgentMixin, AgentForInternLM):
     """Streaming implementation of `lagent.agents.AgentForInternLM`"""
 
     _INTERNAL_AGENT_CLS = StreamingAgent
+
+    def __init__(self, *args, **kwargs):
+        """Initialize with proper plugin executor setup."""
+        # First call parent to create the inner agent
+        super().__init__(*args, **kwargs)
+
+        # CRITICAL FIX: Ensure the inner agent has the plugin_executor
+        # This must happen AFTER super().__init__() creates self.agent
+        # The plugins are stored in self.plugin_executor.actions, not self.plugins
+
+        if hasattr(self, 'plugin_executor') and self.plugin_executor and hasattr(self, 'agent'):
+            # The outer plugin_executor already has the initialized actions
+            if not hasattr(self.agent, 'plugin_executor') or self.agent.plugin_executor is None:
+                # Simply assign the same plugin_executor to the inner agent
+                self.agent.plugin_executor = self.plugin_executor
+                print(f"✅ StreamingAgentForInternLM: Fixed inner agent plugin_executor")
+
+            # Also ensure interpreter_executor exists on inner agent
+            if not hasattr(self.agent, 'interpreter_executor'):
+                self.agent.interpreter_executor = None
 
     def forward(self, message: AgentMessage, session_id=0, **kwargs):
         if isinstance(message, str):
@@ -159,6 +186,26 @@ class AsyncStreamingAgentForInternLM(AsyncStreamingAgentMixin, AsyncAgentForInte
     """Streaming implementation of `lagent.agents.AsyncAgentForInternLM`"""
 
     _INTERNAL_AGENT_CLS = AsyncStreamingAgent
+
+    def __init__(self, *args, **kwargs):
+        """Initialize with proper plugin executor setup."""
+        # First call parent to create the inner agent
+        super().__init__(*args, **kwargs)
+
+        # CRITICAL FIX: Ensure the inner agent has the plugin_executor
+        # This must happen AFTER super().__init__() creates self.agent
+        # The plugins are stored in self.plugin_executor.actions, not self.plugins
+
+        if hasattr(self, 'plugin_executor') and self.plugin_executor and hasattr(self, 'agent'):
+            # The outer plugin_executor already has the initialized actions
+            if not hasattr(self.agent, 'plugin_executor') or self.agent.plugin_executor is None:
+                # Simply assign the same plugin_executor to the inner agent
+                self.agent.plugin_executor = self.plugin_executor
+                print(f"✅ AsyncStreamingAgentForInternLM: Fixed inner agent plugin_executor")
+
+            # Also ensure interpreter_executor exists on inner agent
+            if not hasattr(self.agent, 'interpreter_executor'):
+                self.agent.interpreter_executor = None
 
     async def forward(self, message: AgentMessage, session_id=0, **kwargs):
         if isinstance(message, str):
