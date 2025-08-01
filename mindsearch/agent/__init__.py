@@ -65,7 +65,7 @@ def init_agent(lang="en", use_async=False):
             api_key=api_key,
         )]
 
-    print(f"✅ Simplified MindSearch: OpenAI GPT-4 + Serper API initialized")
+    logging.info("✅ Simplified MindSearch: OpenAI GPT-4 + Serper API initialized")
     agent = (AsyncMindSearchAgent if use_async else MindSearchAgent)(
         llm=llm,
         template=date,
